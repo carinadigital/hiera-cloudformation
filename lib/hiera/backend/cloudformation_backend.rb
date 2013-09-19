@@ -31,13 +31,22 @@ class Hiera
 					require 'json'
 				end
 
-				if Config.include?(:cloudformation) && !Config[:cloudformation].nil? &&
-					Config[:cloudformation].include?(:access_key_id) && Config[:cloudformation].include?(:secret_access_key)
-					Hiera.debug("Found AWS access key from configuration")
-					AWS.config({
-						:access_key_id => Config[:cloudformation][:access_key_id],
-						:secret_access_key => Config[:cloudformation][:secret_access_key]
-					})
+				if Config.include?(:cloudformation) && !Config[:cloudformation].nil?
+					aws_config = {}
+					if Config[:cloudformation].include?(:access_key_id) && Config[:cloudformation].include?(:secret_access_key)
+						Hiera.debug("Found AWS access key from configuration")
+						aws_config[:access_key_id] = Config[:cloudformation][:access_key_id]
+						aws_config[:secret_access_key] = Config[:cloudformation][:secret_access_key]
+					end
+					if Config[:cloudformation].include?(:region)
+						Hiera.debug("Found AWS region from configuration")
+						aws_config[:region] = Config[:cloudformation][:region]
+					end
+					if aws_config.length == 0
+						Hiera.debug("CloudFormation configuration is found, but none of the settings are recognized.")
+					else
+						AWS.config(aws_config)
+					end
 				else
 					Hiera.debug("No configuration found, will fall back to env variables or IAM role")
 				end

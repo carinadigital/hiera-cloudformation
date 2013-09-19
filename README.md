@@ -29,6 +29,15 @@ If you do not add these keys to your configuration file, the access keys will be
 the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, or from an IAM
 instance role (if you are running Hiera on an EC2 instance with an IAM role assigned).
 
+You can also add a region setting to the `:cloudformation` section in
+hiera.yaml:
+
+    :cloudformation:
+      :region: us-west-2
+
+If not specified, the region setting will be looked up from the `AWS_REGION`
+environment variable, or `us-west-2` if not set.
+
 To use this backend you also need to add entries to your "hierarchy" in your hiera.yaml file.
 If you put an entry of this form in your hierarchy:
 
