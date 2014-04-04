@@ -19,7 +19,7 @@ require 'rubygems/package_task'
 
 spec = Gem::Specification.new do |gem|
 	gem.name          = "carinadigital-hiera-cloudformation"
-	gem.version       = '0.0.1.3'
+	gem.version       = '0.0.1.4'
 	gem.authors       = ["carinadigital"]
 	gem.email         = ["carinadigital@gmail.com"]
 	gem.summary       = %q{CloudFormation backend for Hiera}
@@ -33,9 +33,11 @@ spec = Gem::Specification.new do |gem|
 	gem.require_paths = ["lib"]
 
 	gem.add_development_dependency "rake"
+	gem.add_runtime_dependency "nokogiri", "~> 1.5.11"
 	gem.add_runtime_dependency "aws-sdk", "~> 1.33.0"
 	gem.add_runtime_dependency "timedcache", "~> 0.4.0"
 	gem.add_runtime_dependency "json", "~> 1.8.0"
+
 end
 
 Gem::PackageTask.new(spec) do |pkg|
