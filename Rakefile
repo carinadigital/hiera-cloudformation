@@ -18,13 +18,13 @@ require 'rubygems'
 require 'rubygems/package_task'
 
 spec = Gem::Specification.new do |gem|
-	gem.name          = "hiera-cloudformation"
-	gem.version       = '0.0.1'
-	gem.authors       = ["Hugh Cole-Baker"]
-	gem.email         = ["hugh@fanduel.com"]
+	gem.name          = "carinadigital-hiera-cloudformation"
+	gem.version       = '0.0.1.3'
+	gem.authors       = ["carinadigital"]
+	gem.email         = ["carinadigital@gmail.com"]
 	gem.summary       = %q{CloudFormation backend for Hiera}
-	gem.description   = %q{Queries CloudFormation stack outputs or resource metadata for Hiera data}
-	gem.homepage      = "https://github.com/fanduel/hiera-cloudformation"
+	gem.description   = %q{Forked from hiera-cloudformation. Queries CloudFormation stack outputs or resource metadata for Hiera data.}
+	gem.homepage      = "https://github.com/carinadigital/hiera-cloudformation"
 	gem.license       = "Apache License (2.0)"
 
 	gem.files         = Dir['{bin,lib,man,test,spec}/**/*', 'Rakefile', 'README*', 'LICENSE*']
