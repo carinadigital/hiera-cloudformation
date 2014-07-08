@@ -39,7 +39,6 @@ retrieved from a stack resource:
       :region: 'us-west-1'
       :parse_metadata: true
 
-
 For use in multiple AWS regions, the region can be set by an interpolated variable.
 
     :cloudformation:
