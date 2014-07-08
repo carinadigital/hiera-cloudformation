@@ -19,12 +19,12 @@ require 'rubygems/package_task'
 require 'rake/testtask'
 
 spec = Gem::Specification.new do |gem|
-	gem.name          = "hiera-cloudformation"
-	gem.version       = '0.0.2'
-	gem.authors       = ["Hugh Cole-Baker"]
-	gem.email         = ["hugh@fanduel.com"]
+	gem.name          = "carinadigital-hiera-cloudformation"
+	gem.version       = '0.0.2.0'
+	gem.authors       = ["carinadigital"]
+	gem.email         = ["carinadigital@gmail.com"]
 	gem.summary       = %q{CloudFormation backend for Hiera}
-	gem.description   = %q{Forked from hiera-cloudformation. Queries CloudFormation stack outputs or resource metadata for Hiera data.}
+	gem.description   = %q{Forked from hiera-cloudformation. Multiregion cloudFormation quieries of stack outputs or resource metadata for Hiera.}
 	gem.homepage      = "https://github.com/carinadigital/hiera-cloudformation"
 	gem.license       = "Apache License (2.0)"
 
