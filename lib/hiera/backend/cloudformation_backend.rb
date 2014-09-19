@@ -33,7 +33,7 @@ class Hiera
 
 				if Config.include?(:cloudformation) && !Config[:cloudformation].nil? then
 					if Config[:cloudformation].fetch(:parse_metadata, false) then
-						Hiera.debug("Will convert CloudFormation stringified metadata back to numbers or booleans.")
+						debug("Will convert CloudFormation stringified metadata back to numbers or booleans.")
 						@parse_metadata = true
 					else
 						@parse_metadata = false
@@ -41,24 +41,24 @@ class Hiera
 
 					@aws_config = {}
 					if Config[:cloudformation].include?(:access_key_id) && Config[:cloudformation].include?(:secret_access_key) then
-						Hiera.debug("Found AWS access key #{Config[:cloudformation][:access_key_id]} from configuration")
+						debug("Found AWS access key #{Config[:cloudformation][:access_key_id]} from configuration")
 						@aws_config[:access_key_id] = Config[:cloudformation][:access_key_id]
 						@aws_config[:secret_access_key] = Config[:cloudformation][:secret_access_key]
 					end
 					if Config[:cloudformation].include?(:region) then
-						Hiera.debug("Found AWS region #{Config[:cloudformation][:region]} from configuration")
+						debug("Found AWS region #{Config[:cloudformation][:region]} from configuration")
 						@aws_config[:region] = Config[:cloudformation][:region]
 					end
 
 				else
-					Hiera.debug("No configuration found, will fall back to env variables or IAM role")
+					debug("No configuration found, will fall back to env variables or IAM role")
 					@cf = AWS::CloudFormation.new
 				end
 
 				@output_cache = TimedCache.new
 				@resource_cache = TimedCache.new
 
-				Hiera.debug("Hiera cloudformation backend loaded")
+				debug("Hiera cloudformation backend loaded")
 			end
 
 
@@ -72,13 +72,13 @@ class Hiera
 				# Interpolate the value from hiera.yaml
 				if @aws_config.include?(:region)
 					@aws_config[:region] = Backend.parse_answer(@aws_config[:region], scope)
-	 				Hiera.debug("Using lookups from region #{@aws_config[:region]} for this run.")
+	 				debug("Using lookups from region #{@aws_config[:region]} for this run.")
 	 			end
 
 				if @aws_config.length != 0 then
 					@cf = AWS::CloudFormation.new(@aws_config)
 				else
-					Hiera.debug("No AWS configuration found, will fall back to env variables or IAM role")
+					debug("No AWS configuration found, will fall back to env variables or IAM role")
 					@cf = AWS::CloudFormation.new
 				end
 			end
@@ -93,13 +93,13 @@ class Hiera
 				Backend.datasources(scope, order_override) do |elem|
 					case elem
 					when /cfstack\/([^\/]+)\/outputs/
-						Hiera.debug("Looking up #{key} as an output of stack #{$1}")
+						debug("Looking up #{key} as an output of stack #{$1}")
 						raw_answer = stack_output_query($1, key)
 					when /cfstack\/([^\/]+)\/resources\/([^\/]+)/
-						Hiera.debug("Looking up #{key} in metadata of stack #{$1} resource #{$2}")
+						debug("Looking up #{key} in metadata of stack #{$1} resource #{$2}")
 						raw_answer = stack_resource_query($1, $2, key)
 					else
-						Hiera.debug("#{elem} doesn't seem to be a CloudFormation hierarchy element")
+						debug("#{elem} doesn't seem to be a CloudFormation hierarchy element")
 						next
 					end
 
@@ -133,11 +133,11 @@ class Hiera
 				outputs = @output_cache.get(stack_name)
 
 				if outputs.nil? then
-					Hiera.debug("#{stack_name} outputs not cached, fetching...")
+					debug("#{stack_name} outputs not cached, fetching...")
 					begin
 						outputs = @cf.stacks[stack_name].outputs
 					rescue AWS::CloudFormation::Errors::ValidationError
-						Hiera.debug("Stack #{stack_name} outputs can't be retrieved")
+						debug("Stack #{stack_name} outputs can't be retrieved")
 						outputs = []  # this is just a non-nil value to serve as marker in cache
 					end
 					@output_cache.put(stack_name, outputs, TIMEOUT)
@@ -152,12 +152,12 @@ class Hiera
 				metadata = @resource_cache.get({:stack => stack_name, :resource => resource_id})
 
 				if metadata.nil? then
-					Hiera.debug("#{stack_name} #{resource_id} metadata not cached, fetching")
+					debug("#{stack_name} #{resource_id} metadata not cached, fetching")
 					begin
 						metadata = @cf.stacks[stack_name].resources[resource_id].metadata
 					rescue AWS::CloudFormation::Errors::ValidationError
 						# Stack or resource doesn't exist
-						Hiera.debug("Stack #{stack_name} resource #{resource_id} can't be retrieved")
+						debug("Stack #{stack_name} resource #{resource_id} can't be retrieved")
 						metadata = "{}" # This is just a non-nil value to serve as marker in cache
 					end
 					@resource_cache.put({:stack => stack_name, :resource => resource_id}, metadata, TIMEOUT)
@@ -203,6 +203,12 @@ class Hiera
 					return json_object
 				end
 			end
+
+            # Custom function to wrap our debug messages to make them easier to find in the output.
+		    def debug(message)
+		      Hiera.debug("[cloudformation_backend]: #{message}")
+		    end
+
 		end
 	end
 end
