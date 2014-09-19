@@ -72,6 +72,23 @@ class Hiera
 				# Interpolate the value from hiera.yaml
 				if @aws_config.include?(:region)
 					@aws_config[:region] = Backend.parse_answer(@aws_config[:region], scope)
+
+	 		        # Make an array of valid AWS regions.
+	 		        aws_region_names = []
+	 				AWS.regions.each do |region|
+                        aws_region_names.push(region.name)
+                    end
+
+		    		# Check this is a valid aws region.
+                    if not aws_region_names.include? @aws_config[:region]
+                    	# If we don't have a region specified then the cloudformation endpoint will be malformed
+                    	# resulting in networking errors.
+                    	# Fail now with a proper error mesage.
+                    	error_message = "[cloudformation_backend]: AWS Region #{@aws_config[:region]} is invalid."
+   					    Hiera.warn(error_message)
+                        raise Exception, error_message
+                    end
+
 	 				debug("Using lookups from region #{@aws_config[:region]} for this run.")
 	 			end
 
