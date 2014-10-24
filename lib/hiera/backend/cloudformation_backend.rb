@@ -65,40 +65,6 @@ class Hiera
 			end
 
 
-            # Ensures that connetion is created for this region in the class variable for connection.
-			def create_connection(region, scope)
-              
-				# If we already have a connection object then return early.
-				if @cf.has_key?(region) then
-					return
-				end
-
-				debug("Creating new persistent aws connection for region #{region}.") 		              
- 		    
-	    		# Check this is a valid aws region.
-                if not is_aws_region_name?(region)
-                	# If we don't have a region specified then the cloudformation endpoint will be malformed
-                	# resulting in networking errors.
-                	# Fail now with a proper error mesage.
-                	error_message = "[cloudformation_backend]: AWS Region #{region} is invalid."
-					    Hiera.warn(error_message)
-                    raise Exception, error_message
-                end
-
-                # Add our region information into the standard aws config.
-                # Use local variable to hold our config.
-                aws_config = @aws_config
-                aws_config[:region] = region
-
-				if @aws_config.length != 0 then
-					@cf[region] = AWS::CloudFormation.new(aws_config)
-				else
-					debug("No AWS configuration found, will fall back to env variables or IAM role")
-					@cf[region] = AWS::CloudFormation.new
-				end
-			end
-
-
 			def lookup(key, scope, order_override, resolution_type)
 				answer = nil
                 
@@ -150,6 +116,39 @@ class Hiera
 				return answer
 			end
 
+
+            # Ensures that connetion is created for this region in the class variable for connection.
+			def create_connection(region, scope)
+              
+				# If we already have a connection object then return early.
+				if @cf.has_key?(region) then
+					return
+				end
+
+				debug("Creating new persistent aws connection for region #{region}.") 		              
+ 		    
+	    		# Check this is a valid aws region.
+                if not is_aws_region_name?(region)
+                	# If we don't have a region specified then the cloudformation endpoint will be malformed
+                	# resulting in networking errors.
+                	# Fail now with a proper error mesage.
+                	error_message = "[cloudformation_backend]: AWS Region #{region} is invalid."
+					    Hiera.warn(error_message)
+                    raise Exception, error_message
+                end
+
+                # Add our region information into the standard aws config.
+                # Use local variable to hold our config.
+                aws_config = @aws_config
+                aws_config[:region] = region
+
+				if @aws_config.length != 0 then
+					@cf[region] = AWS::CloudFormation.new(aws_config)
+				else
+					debug("No AWS configuration found, will fall back to env variables or IAM role")
+					@cf[region] = AWS::CloudFormation.new
+				end
+			end
 
 			def stack_output_query(stack_name, key, region)
 				outputs = @output_cache.get(region+stack_name)
