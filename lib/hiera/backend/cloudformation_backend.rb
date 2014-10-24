@@ -31,36 +31,50 @@ class Hiera
 					require 'json'
 				end
 
-				if Config.include?(:cloudformation) && !Config[:cloudformation].nil? then
-					if Config[:cloudformation].fetch(:parse_metadata, false) then
-						debug("Will convert CloudFormation stringified metadata back to numbers or booleans.")
-						@parse_metadata = true
-					else
-						@parse_metadata = false
-					end
-
-					@aws_config = {}
-					if Config[:cloudformation].include?(:access_key_id) && Config[:cloudformation].include?(:secret_access_key) then
-						debug("Found AWS access key #{Config[:cloudformation][:access_key_id]} from configuration")
-						@aws_config[:access_key_id] = Config[:cloudformation][:access_key_id]
-						@aws_config[:secret_access_key] = Config[:cloudformation][:secret_access_key]
-					end
-					if Config[:cloudformation].include?(:region) then
-						debug("Found AWS region #{Config[:cloudformation][:region]} from configuration")
-						@aws_config[:region] = Config[:cloudformation][:region]
-					end
-
-				else
-	             	error_message = "[cloudformation_backend]: No configuration found."
-				    Hiera.warn(error_message)
-                    raise Exception, error_message
-
-				end
-
+				# Class variables
                 @cf = Hash.new # Variable for hash of connection options, keyed by region.
+                @aws_config = {} # AWS access credentials from yaml.
 				@output_cache = TimedCache.new
 				@resource_cache = TimedCache.new
 
+
+				# Check our config key is present in hiera.yaml
+				if not Config.include?(:cloudformation) || Config[:cloudformation].nil? then
+	            	error_message = "[cloudformation_backend]: No configuration found."
+				    Hiera.warn(error_message)
+                    raise Exception, error_message 
+				end
+
+				if not Config[:cloudformation].include?(:access_key_id) then 
+	            	error_message = "[cloudformation_backend]: :access_key_id missing in configuration."
+				    Hiera.warn(error_message)
+                    raise Exception, error_message 
+                end
+
+				if not Config[:cloudformation].include?(:secret_access_key) then
+	            	error_message = "[cloudformation_backend]: :secret_access_key missing in configuration."
+				    Hiera.warn(error_message)
+                    raise Exception, error_message 
+				end
+
+				if not Config[:cloudformation].include?(:region) then
+	            	error_message = "[cloudformation_backend]: :region missing in configuration."
+				    Hiera.warn(error_message)
+                    raise Exception, error_message 
+				end
+
+				if Config[:cloudformation].fetch(:parse_metadata, false) then
+					debug("Will convert CloudFormation stringified metadata back to numbers or booleans.")
+					@parse_metadata = true
+				else
+					@parse_metadata = false
+				end
+				
+				debug("Using AWS access key #{Config[:cloudformation][:access_key_id]} from yaml")
+				@aws_config[:access_key_id] = Config[:cloudformation][:access_key_id]
+				@aws_config[:secret_access_key] = Config[:cloudformation][:secret_access_key]
+				debug("Using AWS region #{Config[:cloudformation][:region]} from yaml")
+				@aws_config[:region] = Config[:cloudformation][:region]
 				debug("Hiera cloudformation backend loaded")
 			end
 
