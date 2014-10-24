@@ -57,6 +57,7 @@ class Hiera
 
 				end
 
+                @cf = Hash.new # Variable for hash of connection options, keyed by region.
 				@output_cache = TimedCache.new
 				@resource_cache = TimedCache.new
 
@@ -64,41 +65,42 @@ class Hiera
 			end
 
 
+            # Ensures that connetion is created for this region in the class variable for connection.
 			def create_connection(region, scope)
-
+              
 				# If we already have a connection object then return early.
-				if defined? @cf then
+				if @cf.has_key?(region) then
 					return
 				end
 
-				# Interpolate the value from hiera.yaml
-				if @aws_config.include?(:region)
-					@aws_config[:region] = Backend.parse_answer(@aws_config[:region], scope)
+				debug("Creating new persistent aws connection for region #{region}.")
+	 		              
+ 		        # Make an array of valid AWS regions.
+ 		        aws_region_names = []
+ 				AWS.regions.each do |aws_region|
+                    aws_region_names.push(aws_region.name)
+                end
 
-	 		        # Make an array of valid AWS regions.
-	 		        aws_region_names = []
-	 				AWS.regions.each do |region|
-                        aws_region_names.push(region.name)
-                    end
+	    		# Check this is a valid aws region.
+                if not aws_region_names.include?(region)
+                	# If we don't have a region specified then the cloudformation endpoint will be malformed
+                	# resulting in networking errors.
+                	# Fail now with a proper error mesage.
+                	error_message = "[cloudformation_backend]: AWS Region #{region} is invalid."
+					    Hiera.warn(error_message)
+                    raise Exception, error_message
+                end
 
-		    		# Check this is a valid aws region.
-                    if not aws_region_names.include? @aws_config[:region]
-                    	# If we don't have a region specified then the cloudformation endpoint will be malformed
-                    	# resulting in networking errors.
-                    	# Fail now with a proper error mesage.
-                    	error_message = "[cloudformation_backend]: AWS Region #{@aws_config[:region]} is invalid."
-   					    Hiera.warn(error_message)
-                        raise Exception, error_message
-                    end
-
-	 				debug("Using lookups from region #{@aws_config[:region]} for this run.")
-	 			end
+                # Add our region information into the standard aws config.
+                # Use local variable to hold our config.
+                aws_config = @aws_config
+                aws_config[:region] = region
 
 				if @aws_config.length != 0 then
-					@cf = AWS::CloudFormation.new(@aws_config)
+					@cf[region] = AWS::CloudFormation.new(aws_config)
 				else
 					debug("No AWS configuration found, will fall back to env variables or IAM role")
-					@cf = AWS::CloudFormation.new
+					@cf[region] = AWS::CloudFormation.new
 				end
 			end
 
@@ -119,10 +121,10 @@ class Hiera
 					case elem
 					when /cfstack\/([^\/]+)\/outputs/
 						debug("Looking up #{key} as an output of stack #{$1}")
-						raw_answer = stack_output_query($1, key)
+						raw_answer = stack_output_query($1, key, agent_region)
 					when /cfstack\/([^\/]+)\/resources\/([^\/]+)/
 						debug("Looking up #{key} in metadata of stack #{$1} resource #{$2}")
-						raw_answer = stack_resource_query($1, $2, key)
+						raw_answer = stack_resource_query($1, $2, key,agent_region)
 					else
 						debug("#{elem} doesn't seem to be a CloudFormation hierarchy element")
 						next
@@ -154,13 +156,14 @@ class Hiera
 				return answer
 			end
 
-			def stack_output_query(stack_name, key)
+
+			def stack_output_query(stack_name, key, region)
 				outputs = @output_cache.get(stack_name)
 
 				if outputs.nil? then
 					debug("#{stack_name} outputs not cached, fetching...")
 					begin
-						outputs = @cf.stacks[stack_name].outputs
+ 						outputs = @cf[region].stacks[stack_name].outputs
 					rescue AWS::CloudFormation::Errors::ValidationError
 						debug("Stack #{stack_name} outputs can't be retrieved")
 						outputs = []  # this is just a non-nil value to serve as marker in cache
@@ -173,13 +176,14 @@ class Hiera
 				return output.empty? ? nil : output.shift.value
 			end
 
-			def stack_resource_query(stack_name, resource_id, key)
+
+			def stack_resource_query(stack_name, resource_id, key, region)
 				metadata = @resource_cache.get({:stack => stack_name, :resource => resource_id})
 
 				if metadata.nil? then
 					debug("#{stack_name} #{resource_id} metadata not cached, fetching")
 					begin
-						metadata = @cf.stacks[stack_name].resources[resource_id].metadata
+						metadata = @cf[region].stacks[stack_name].resources[resource_id].metadata
 					rescue AWS::CloudFormation::Errors::ValidationError
 						# Stack or resource doesn't exist
 						debug("Stack #{stack_name} resource #{resource_id} can't be retrieved")
