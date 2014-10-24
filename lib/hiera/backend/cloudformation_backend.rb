@@ -152,7 +152,7 @@ class Hiera
 
 
 			def stack_output_query(stack_name, key, region)
-				outputs = @output_cache.get(stack_name)
+				outputs = @output_cache.get(region+stack_name)
 
 				if outputs.nil? then
 					debug("#{stack_name} outputs not cached, fetching...")
@@ -162,7 +162,7 @@ class Hiera
 						debug("Stack #{stack_name} outputs can't be retrieved")
 						outputs = []  # this is just a non-nil value to serve as marker in cache
 					end
-					@output_cache.put(stack_name, outputs, TIMEOUT)
+					@output_cache.put(region+stack_name, outputs, TIMEOUT)
 				end
 
 				output = outputs.select { |item| item.key == key }
@@ -172,7 +172,7 @@ class Hiera
 
 
 			def stack_resource_query(stack_name, resource_id, key, region)
-				metadata = @resource_cache.get({:stack => stack_name, :resource => resource_id})
+				metadata = @resource_cache.get({:stack => region+stack_name, :resource => resource_id})
 
 				if metadata.nil? then
 					debug("#{stack_name} #{resource_id} metadata not cached, fetching")
@@ -183,7 +183,7 @@ class Hiera
 						debug("Stack #{stack_name} resource #{resource_id} can't be retrieved")
 						metadata = "{}" # This is just a non-nil value to serve as marker in cache
 					end
-					@resource_cache.put({:stack => stack_name, :resource => resource_id}, metadata, TIMEOUT)
+					@resource_cache.put({:stack => region+stack_name, :resource => resource_id}, metadata, TIMEOUT)
 				end
 
 				if metadata.respond_to?(:to_str) then
