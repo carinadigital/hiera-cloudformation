@@ -151,18 +151,13 @@ class Hiera
                     raise Exception, error_message
                 end
 
-                # Add our region information into the standard aws config.
-                # Use local variable to hold our config.
+                # Overwrite with region information into the standard aws config.
+                # Use a local variable to hold our config.
                 aws_config = @aws_config
                 aws_config[:region] = region
-
-				if @aws_config.length != 0 then
-					@cf[region] = AWS::CloudFormation.new(aws_config)
-				else
-					debug("No AWS configuration found, will fall back to env variables or IAM role")
-					@cf[region] = AWS::CloudFormation.new
-				end
+				@cf[region] = AWS::CloudFormation.new(aws_config)
 			end
+
 
 			def stack_output_query(stack_name, key, region)
 				outputs = @output_cache.get(region+stack_name)
@@ -210,6 +205,7 @@ class Hiera
 				return nil
 			end
 
+
 			def convert_metadata(json_object)
 				if json_object.is_a?(Hash) then
 					# convert each value of a Hash
@@ -239,6 +235,7 @@ class Hiera
 					return json_object
 				end
 			end
+
 
             # Custom function to wrap our debug messages to make them easier to find in the output.
 		    def debug(message)
