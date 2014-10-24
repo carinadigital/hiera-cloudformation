@@ -45,18 +45,24 @@ class Hiera
                     raise Exception, error_message 
 				end
 
+                # Check we have the AWS access_key_id
 				if not Config[:cloudformation].include?(:access_key_id) then 
 	            	error_message = "[cloudformation_backend]: :access_key_id missing in configuration."
 				    Hiera.warn(error_message)
                     raise Exception, error_message 
                 end
 
+                #Check we have the AWS secret_access_key
 				if not Config[:cloudformation].include?(:secret_access_key) then
 	            	error_message = "[cloudformation_backend]: :secret_access_key missing in configuration."
 				    Hiera.warn(error_message)
                     raise Exception, error_message 
 				end
 
+                # Check we have the AWS region.
+                # This can be a static region name of an interpolated fact.
+                # TODO: This should be improved so it can fallback to default environment or 
+                # dot file values. 
 				if not Config[:cloudformation].include?(:region) then
 	            	error_message = "[cloudformation_backend]: :region missing in configuration."
 				    Hiera.warn(error_message)
@@ -70,10 +76,10 @@ class Hiera
 					@parse_metadata = false
 				end
 				
-				debug("Using AWS access key #{Config[:cloudformation][:access_key_id]} from yaml")
+				debug("Using AWS access key #{Config[:cloudformation][:access_key_id]}")
 				@aws_config[:access_key_id] = Config[:cloudformation][:access_key_id]
 				@aws_config[:secret_access_key] = Config[:cloudformation][:secret_access_key]
-				debug("Using AWS region #{Config[:cloudformation][:region]} from yaml")
+				debug("Using AWS region #{Config[:cloudformation][:region]}")
 				@aws_config[:region] = Config[:cloudformation][:region]
 				debug("Hiera cloudformation backend loaded")
 			end
@@ -87,6 +93,7 @@ class Hiera
  				if @aws_config.include?(:region)
 					agent_region = Backend.parse_answer(@aws_config[:region], scope)
                 end
+                debug("Agent lookup using region #{agent_region}.")
 
 				# Idempotent connection creation of AWS connections for reuse.
 	  			create_connection(agent_region, scope)
