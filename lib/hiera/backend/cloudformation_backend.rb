@@ -62,7 +62,7 @@ class Hiera
 			end
 
 
-			def create_connection(scope)
+			def create_connection(region, scope)
 
 				# If we already have a connection object then return early.
 				if defined? @cf then
@@ -103,9 +103,15 @@ class Hiera
 
 			def lookup(key, scope, order_override, resolution_type)
 				answer = nil
+                
+                # Lookups can potentially come from different agents in different AWS regions.
+        		# Interpolate the value from hiera.yaml for this agent's region.
+ 				if @aws_config.include?(:region)
+					agent_region = Backend.parse_answer(@aws_config[:region], scope)
+                end
 
-				# Idempotent connection creation.
-	  			create_connection(scope)
+				# Idempotent connection creation of AWS connections for reuse.
+	  			create_connection(agent_region, scope)
 
 				Backend.datasources(scope, order_override) do |elem|
 					case elem
