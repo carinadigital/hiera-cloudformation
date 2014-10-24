@@ -34,8 +34,8 @@ class Hiera
 				# Class variables
                 @cf = Hash.new # Variable for hash of connection options, keyed by region.
                 @aws_config = {} # AWS access credentials from yaml.
-				@output_cache = TimedCache.new
-				@resource_cache = TimedCache.new
+				@output_cache = TimedCache.new(:default_timeout => 60)    #Default timeout in 60 seconds.
+				@resource_cache = TimedCache.new(:default_timeout => 60)
 
 
 				# Check our config key is present in hiera.yaml
