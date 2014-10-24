@@ -73,16 +73,10 @@ class Hiera
 					return
 				end
 
-				debug("Creating new persistent aws connection for region #{region}.")
-	 		              
- 		        # Make an array of valid AWS regions.
- 		        aws_region_names = []
- 				AWS.regions.each do |aws_region|
-                    aws_region_names.push(aws_region.name)
-                end
-
+				debug("Creating new persistent aws connection for region #{region}.") 		              
+ 		    
 	    		# Check this is a valid aws region.
-                if not aws_region_names.include?(region)
+                if not is_aws_region_name?(region)
                 	# If we don't have a region specified then the cloudformation endpoint will be malformed
                 	# resulting in networking errors.
                 	# Fail now with a proper error mesage.
@@ -237,6 +231,23 @@ class Hiera
 		    def debug(message)
 		      Hiera.debug("[cloudformation_backend]: #{message}")
 		    end
+
+
+            # Check region name is a valid AWS regoion
+            def is_aws_region_name?(name)
+   		        # Make an array of valid AWS regions.
+ 		        aws_region_names = []
+ 				AWS.regions.each do |aws_region|
+                    aws_region_names.push(aws_region.name)
+                end
+
+	    		# Check this is a valid aws region.
+                if aws_region_names.include?(name)
+                	return true
+                else
+                	return false
+                end
+            end
 
 		end
 	end
