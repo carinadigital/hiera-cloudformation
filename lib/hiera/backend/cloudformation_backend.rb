@@ -51,8 +51,10 @@ class Hiera
 					end
 
 				else
-					debug("No configuration found, will fall back to env variables or IAM role")
-					@cf = AWS::CloudFormation.new
+	             	error_message = "[cloudformation_backend]: No configuration found."
+				    Hiera.warn(error_message)
+                    raise Exception, error_message
+
 				end
 
 				@output_cache = TimedCache.new
