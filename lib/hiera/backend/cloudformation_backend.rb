@@ -93,7 +93,6 @@ class Hiera
  				if @aws_config.include?(:region)
 					agent_region = Backend.parse_answer(@aws_config[:region], scope)
                 end
-                debug("Agent lookup using region #{agent_region}.")
 
 				# Idempotent connection creation of AWS connections for reuse.
 	  			create_connection(agent_region, scope)
@@ -101,13 +100,13 @@ class Hiera
 				Backend.datasources(scope, order_override) do |elem|
 					case elem
 					when /cfstack\/([^\/]+)\/outputs/
-						debug("Looking up #{key} as an output of stack #{$1}")
+						debug("Looking up #{agent_region} #{key} as an output of stack #{$1}")
 						raw_answer = stack_output_query($1, key, agent_region)
 					when /cfstack\/([^\/]+)\/resources\/([^\/]+)/
-						debug("Looking up #{key} in metadata of stack #{$1} resource #{$2}")
+						debug("Looking up #{agent_region} #{key} in metadata of stack #{$1} resource #{$2}")
 						raw_answer = stack_resource_query($1, $2, key,agent_region)
 					else
-						debug("#{elem} doesn't seem to be a CloudFormation hierarchy element")
+						#debug("#{elem} doesn't seem to be a CloudFormation hierarchy element")
 						next
 					end
 
