@@ -32,7 +32,8 @@ class Hiera
 				end
 
 				# Class variables
-                @aws_config = {} # AWS access credentials from yaml.
+				# Data shared amongst all instance of this class.
+                @@aws_config = {} # AWS access credentials from yaml.
 				@output_cache = TimedCache.new(:default_timeout => 60)    #Default timeout in 60 seconds.
 				@resource_cache = TimedCache.new(:default_timeout => 60)
 
@@ -82,10 +83,10 @@ class Hiera
 				end
 				
 				debug("Using AWS access key #{Config[:cloudformation][:access_key_id]}")
-				@aws_config['access_key_id'] = Config[:cloudformation][:access_key_id]
-				@aws_config['secret_access_key'] = Config[:cloudformation][:secret_access_key]
+				@@aws_config['access_key_id'] = Config[:cloudformation][:access_key_id]
+				@@aws_config['secret_access_key'] = Config[:cloudformation][:secret_access_key]
 				debug("Using AWS region #{Config[:cloudformation][:region]}")
-				@aws_config['region'] = Config[:cloudformation][:region]
+				@@aws_config['region'] = Config[:cloudformation][:region]
 				debug("Hiera cloudformation backend loaded")
 			end
 
@@ -95,8 +96,8 @@ class Hiera
                 
                 # Lookups can potentially come from different agents in different AWS regions.
         		# Interpolate the value from hiera.yaml for this agent's region.
- 				if @aws_config.include?('region')
-					agent_region = Backend.parse_answer(@aws_config['region'], scope)
+ 				if @@aws_config.include?('region')
+					agent_region = Backend.parse_answer(@@aws_config['region'], scope)
                 end
 
 				# Idempotent connection creation of AWS connections for reuse.
@@ -164,8 +165,8 @@ class Hiera
 
                 # Create an AWS connecton object for this region.
 				@cf[region] = AWS::CloudFormation.new(
-				  :access_key_id => @aws_config['access_key_id'],
-  				  :secret_access_key => @aws_config['secret_access_key'],
+				  :access_key_id => @@aws_config['access_key_id'],
+  				  :secret_access_key => @@aws_config['secret_access_key'],
   				  :region => region
 				)
 			end
