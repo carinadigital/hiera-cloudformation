@@ -78,10 +78,10 @@ class Hiera
 				end
 				
 				debug("Using AWS access key #{Config[:cloudformation][:access_key_id]}")
-				@aws_config[:access_key_id] = Config[:cloudformation][:access_key_id]
-				@aws_config[:secret_access_key] = Config[:cloudformation][:secret_access_key]
+				@aws_config['access_key_id'] = Config[:cloudformation][:access_key_id]
+				@aws_config['secret_access_key'] = Config[:cloudformation][:secret_access_key]
 				debug("Using AWS region #{Config[:cloudformation][:region]}")
-				@aws_config[:region] = Config[:cloudformation][:region]
+				@aws_config['region'] = Config[:cloudformation][:region]
 				debug("Hiera cloudformation backend loaded")
 			end
 
@@ -91,8 +91,8 @@ class Hiera
                 
                 # Lookups can potentially come from different agents in different AWS regions.
         		# Interpolate the value from hiera.yaml for this agent's region.
- 				if @aws_config.include?(:region)
-					agent_region = Backend.parse_answer(@aws_config[:region], scope)
+ 				if @aws_config.include?('region')
+					agent_region = Backend.parse_answer(@aws_config['region'], scope)
                 end
 
 				# Idempotent connection creation of AWS connections for reuse.
@@ -158,11 +158,12 @@ class Hiera
                     raise Exception, error_message
                 end
 
-                # Overwrite with region information into the standard aws config.
-                # Use a local variable to hold our config.
-                aws_config = @aws_config
-                aws_config[:region] = region
-				@cf[region] = AWS::CloudFormation.new(aws_config)
+                # Create an AWS connecton object for this region.
+				@cf[region] = AWS::CloudFormation.new(
+				  :access_key_id => @aws_config['access_key_id'],
+  				  :secret_access_key => @aws_config['secret_access_key'],
+  				  :region => region
+				)
 			end
 
 
