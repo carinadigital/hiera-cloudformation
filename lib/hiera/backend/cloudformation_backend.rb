@@ -101,10 +101,10 @@ class Hiera
 				Backend.datasources(scope, order_override) do |elem|
 					case elem
 					when /cfstack\/([^\/]+)\/outputs/
-						debug("Looking up #{agent_region} #{key} as an output of stack #{$1}")
+						debug("Looking up #{agent_region} #{$1} #{key} as an output of stack.")
 						raw_answer = stack_output_query($1, key, agent_region)
 					when /cfstack\/([^\/]+)\/resources\/([^\/]+)/
-						debug("Looking up #{agent_region} #{key} in metadata of stack #{$1} resource #{$2}")
+						debug("Looking up #{agent_region} #{$1} #{$2} #{key} in metadata of stack resource")
 						raw_answer = stack_resource_query($1, $2, key,agent_region)
 					else
 						#debug("#{elem} doesn't seem to be a CloudFormation hierarchy element")
