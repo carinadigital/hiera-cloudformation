@@ -32,10 +32,14 @@ class Hiera
 				end
 
 				# Class variables
-                @cf = Hash.new # Variable for hash of connection options, keyed by region.
                 @aws_config = {} # AWS access credentials from yaml.
 				@output_cache = TimedCache.new(:default_timeout => 60)    #Default timeout in 60 seconds.
 				@resource_cache = TimedCache.new(:default_timeout => 60)
+
+                # Class instance variables
+                # We want don't want two instances trying to reuse the same connection objects, and possible
+                # the same connection, so give each class it's own connection objects.
+                @cf = Hash.new # Variable for hash of connection options, keyed by region.
 
 
 				# Check our config key is present in hiera.yaml
