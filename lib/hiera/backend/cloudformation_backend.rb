@@ -46,6 +46,7 @@ class Hiera
 				end
 
                 # Check we have the AWS access_key_id
+                # TODO we should have a fallback for access credentials as per documentaion.
 				if not Config[:cloudformation].include?(:access_key_id) then 
 	            	error_message = "[cloudformation_backend]: :access_key_id missing in configuration."
 				    Hiera.warn(error_message)
