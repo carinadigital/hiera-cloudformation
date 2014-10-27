@@ -96,7 +96,7 @@ class Hiera
                 end
 
 				# Idempotent connection creation of AWS connections for reuse.
-	  			create_connection(agent_region, scope)
+	  			create_connection(agent_region)
 
 				Backend.datasources(scope, order_override) do |elem|
 					case elem
@@ -139,7 +139,7 @@ class Hiera
 
 
             # Ensures that connetion is created for this region in the class variable for connection.
-			def create_connection(region, scope)
+			def create_connection(region)
               
 				# If we already have a connection object then return early.
 				if @cf.has_key?(region) then
