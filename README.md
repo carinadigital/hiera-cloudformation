@@ -1,13 +1,17 @@
-# Hiera::Cloudformation
+# Multiregion Hiera::Cloudformation
 
-This backend for Hiera can retrieve information from:
+This a a fork of the hiera-cloudformaiton project (https://github.com/fanduel/hiera-cloudformation).
+It adds the ability to lookup stack outputs in multiple regions from a single install along with other
+small fixes.
+
+This a backend for Hiera can retrieve information from:
 
 * the outputs of a CloudFormation stack
 * the metadata of a resource in a stack
 
 ## Installation
 
-    gem install hiera-cloudformation
+    gem install carinadigital-hiera-cloudformation
 
 ## Usage
 

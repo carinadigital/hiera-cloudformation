@@ -20,10 +20,10 @@ require 'rake/testtask'
 
 spec = Gem::Specification.new do |gem|
 	gem.name          = "carinadigital-hiera-cloudformation"
-	gem.version       = '0.0.2.1'
+	gem.version       = '0.0.2.2'
 	gem.authors       = ["carinadigital"]
 	gem.email         = ["carinadigital@gmail.com"]
-	gem.summary       = %q{CloudFormation backend for Hiera}
+	gem.summary       = %q{Multiregion CloudFormation backend for Hiera}
 	gem.description   = %q{Forked from hiera-cloudformation. Multiregion cloudFormation quieries of stack outputs or resource metadata for Hiera.}
 	gem.homepage      = "https://github.com/carinadigital/hiera-cloudformation"
 	gem.license       = "Apache License (2.0)"
