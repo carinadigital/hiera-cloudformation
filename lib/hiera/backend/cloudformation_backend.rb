@@ -122,7 +122,6 @@ class Hiera
 
                 debug("Creating new persistent aws connection for region #{region}.")                       
              
-                raise Exception,"boo"
 
                 if Config[:cloudformation].include?(:access_key_id) and Config[:cloudformation].include?(:secret_access_key) and Config[:cloudformation].include?(:region) then
             
@@ -142,14 +141,20 @@ class Hiera
                     :secret_access_key => @@aws_config['secret_access_key'],
                     :region => region
                     )
-                elsif Config[:cloudformation].include?(:profile) then
+                elsif Config[:cloudformation].include?(:profile) and Config[:cloudformation].include?(:region) then
                         # Create an AWS connecton object from a profile
                         @cf[region] = AWS::CloudFormation.new(
-                        :profile => @@aws_config['profile']
+                        :profile => @@aws_config['profile'],
+			 :region => region
                         )
-                else
-                    # Create an AWS connecton object using Instance Role
-                    @cf[region] = AWS::CloudFormation.new()
+		elsif Config[:cloudformation].include?(:region) then
+                    	# Create an AWS connecton object using Instance Role and a region
+                    	@cf[region] = AWS::CloudFormation.new(
+		    	:region => region
+		    	)
+		else
+			# Create an AWS connecton object using Instance Role in its current region
+			@cf[region] = AWS::CloudFormation.new()
                 end
             end
 
