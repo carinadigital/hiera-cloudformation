@@ -44,29 +44,6 @@ class Hiera
                 # the same connection, so give each class it's own connection objects.
                 @cf = Hash.new # Variable for hash of connection options, keyed by region.
 
-
-                # Check our config key is present in hiera.yaml
-                if not Config.include?(:cloudformation) || Config[:cloudformation].nil? then
-                    error_message = "[cloudformation_backend]: No configuration found."
-                    Hiera.warn(error_message)
-                    raise Exception, error_message 
-                end
-
-                # Check we have the AWS access_key_id
-                # TODO we should have a fallback for access credentials as per documentaion.
-                if not Config[:cloudformation].include?(:access_key_id) then 
-                    error_message = "[cloudformation_backend]: :access_key_id missing in configuration."
-                    Hiera.warn(error_message)
-                    raise Exception, error_message 
-                end
-
-                #Check we have the AWS secret_access_key
-                if not Config[:cloudformation].include?(:secret_access_key) then
-                    error_message = "[cloudformation_backend]: :secret_access_key missing in configuration."
-                    Hiera.warn(error_message)
-                    raise Exception, error_message 
-                end
-
                 # Check we have the AWS region.
                 # This can be a static region name of an interpolated fact.
                 # TODO: This should be improved so it can fallback to default environment or 
@@ -76,6 +53,7 @@ class Hiera
                     Hiera.warn(error_message)
                     raise Exception, error_message 
                 end
+
 
                 if Config[:cloudformation].fetch(:parse_metadata, false) then
                     debug("Will convert CloudFormation stringified metadata back to numbers or booleans.")
@@ -155,22 +133,36 @@ class Hiera
 
                 debug("Creating new persistent aws connection for region #{region}.")                       
              
-                # Check this is a valid aws region.
-                if not is_aws_region_name?(region)
-                    # If we don't have a region specified then the cloudformation endpoint will be malformed
-                    # resulting in networking errors.
-                    # Fail now with a proper error mesage.
-                    error_message = "[cloudformation_backend]: AWS Region #{region} is invalid."
-                        Hiera.warn(error_message)
-                    raise Exception, error_message
-                end
 
-                # Create an AWS connecton object for this region.
-                @cf[region] = AWS::CloudFormation.new(
-                  :access_key_id => @@aws_config['access_key_id'],
+                if Config[:cloudformation].include?(:access_key_id) and Config[:cloudformation].include?(:secret_access_key) and Config[:cloudformation].include?(:region) then
+            
+                    # Check this is a valid aws region.
+                    if not is_aws_region_name?(region)
+                        # If we don't have a region specified then the cloudformation endpoint will be malformed
+                        # resulting in networking errors.
+                        # Fail now with a proper error mesage.
+                        error_message = "[cloudformation_backend]: AWS Region #{region} is invalid."
+                            Hiera.warn(error_message)
+                        raise Exception, error_message
+                    end
+            
+                    # Create an AWS connecton object for this region using given credentials
+                    @cf[region] = AWS::CloudFormation.new(
+                    :access_key_id => @@aws_config['access_key_id'],
                     :secret_access_key => @@aws_config['secret_access_key'],
                     :region => region
-                )
+                    )
+                elsif Config[:cloudformation].include?(:profile) and Config[:cloudformation].include?(:region) then
+                        # Create an AWS connecton object from a profile
+                        @cf[region] = AWS::CloudFormation.new(
+                        :profile => @@aws_config['profile'],
+			 :region => region
+                        )
+		else Config[:cloudformation].include?(:region) then
+                    	# Create an AWS connecton object using Instance Role and a region
+                    	@cf[region] = AWS::CloudFormation.new(
+		    	:region => region
+		    	)
             end
 
 
