@@ -44,6 +44,17 @@ class Hiera
                 # the same connection, so give each class it's own connection objects.
                 @cf = Hash.new # Variable for hash of connection options, keyed by region.
 
+                # Check we have the AWS region.
+                # This can be a static region name of an interpolated fact.
+                # TODO: This should be improved so it can fallback to default environment or 
+                # dot file values. 
+                if not Config[:cloudformation].include?(:region) then
+                    error_message = "[cloudformation_backend]: :region missing in configuration."
+                    Hiera.warn(error_message)
+                    raise Exception, error_message 
+                end
+
+
                 if Config[:cloudformation].fetch(:parse_metadata, false) then
                     debug("Will convert CloudFormation stringified metadata back to numbers or booleans.")
                     @parse_metadata = true
@@ -147,15 +158,11 @@ class Hiera
                         :profile => @@aws_config['profile'],
 			 :region => region
                         )
-		elsif Config[:cloudformation].include?(:region) then
+		else Config[:cloudformation].include?(:region) then
                     	# Create an AWS connecton object using Instance Role and a region
                     	@cf[region] = AWS::CloudFormation.new(
 		    	:region => region
 		    	)
-		else
-			# Create an AWS connecton object using Instance Role in its current region
-			@cf[region] = AWS::CloudFormation.new()
-                end
             end
 
 
