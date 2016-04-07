@@ -1,13 +1,17 @@
-# Hiera::Cloudformation
+# Multiregion Hiera::Cloudformation
 
-This backend for Hiera can retrieve information from:
+This a a fork of the hiera-cloudformaiton project (https://github.com/fanduel/hiera-cloudformation).
+It adds the ability to lookup stack outputs in multiple regions from a single install along with other
+small fixes.
+
+This a backend for Hiera can retrieve information from:
 
 * the outputs of a CloudFormation stack
 * the metadata of a resource in a stack
 
 ## Installation
 
-    gem install hiera-cloudformation
+    gem install carinadigital-hiera-cloudformation
 
 ## Usage
 
@@ -29,17 +33,15 @@ If you do not add these keys to your configuration file, the access keys will be
 the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, or from an IAM
 instance role (if you are running Hiera on an EC2 instance with an IAM role assigned).
 
-The AWS region to use can also be configured in the `:cloudformation` section of hiera.yaml.
 You can also tell the backend to convert string literals "true", "false", "3.14", etc to Boolean
 or Number types with the `:parse_metadata` configuration option; this may be useful as
 CloudFormation will convert Booleans and Numbers in the template JSON metadata into Strings when
 retrieved from a stack resource:
 
     :cloudformation:
-      :region: 'us-west-1'
       :parse_metadata: true
 
-
+The AWS region to use can also be configured in the `:cloudformation` section of hiera.yaml.
 For use in multiple AWS regions, the region can be set by an interpolated variable.
 
     :cloudformation:
